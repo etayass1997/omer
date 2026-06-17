@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>עומר - סוכן תמחור</title>
+<meta name="description" content="עומר מוצא לך את המחיר הכי טוב">
+<meta name="theme-color" content="#1b5e20">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<style>
+  :root {
+    --green: #1b5e20;
+    --green-light: #2e7d32;
+    --orange: #ff6f00;
+    --orange-light: #ff9800;
+    --white: #ffffff;
+    --bg: #f4f7f4;
+    --text: #1c1c1c;
+    --muted: #6b7a6c;
+    --radius: 18px;
+    --shadow: 0 4px 18px rgba(27, 94, 32, 0.12);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Heebo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    direction: rtl;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #app {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--white);
+    box-shadow: var(--shadow);
+    position: relative;
+  }
+
+  header.top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: var(--green);
+    color: var(--white);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  header.top-bar .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 1.2rem;
+  }
+
+  header.top-bar .brand .icon {
+    font-size: 1.4rem;
+  }
+
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 20px 100px;
+    gap: 20px;
+  }
+
+  /* ---------- Splash ---------- */
+  .splash {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    text-align: center;
+    gap: 14px;
+    animation: fadeIn 0.6s ease;
+  }
+
+  .splash .tag-icon {
+    width: 96px;
+    height: 96px;
+    border-radius: 28px;
+    background: linear-gradient(145deg, var(--orange), var(--orange-light));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    box-shadow: 0 10px 24px rgba(255, 111, 0, 0.35);
+    animation: pop 0.7s ease;
+  }
+
+  .splash h1 {
+    color: var(--green);
+    font-size: 2.1rem;
+    font-weight: 900;
+    margin: 6px 0 0;
+  }
+
+  .splash p {
+    color: var(--muted);
+    font-size: 1.05rem;
+    margin: 0;
+  }
+
+  .splash .start-btn {
+    margin-top: 18px;
+  }
+
+  /* ---------- Search screen ---------- */
+  .search-screen {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    flex: 1;
+    justify-content: center;
+    animation: fadeIn 0.4s ease;
+  }
+
+  .search-title {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--green);
+  }
+
+  .search-box {
+    width: 100%;
+    padding: 18px 20px;
+    font-size: 1.1rem;
+    border: 2px solid #e2ebe2;
+    border-radius: var(--radius);
+    font-family: inherit;
+    text-align: right;
+    transition: border-color 0.2s;
+  }
+
+  .search-box:focus {
+    outline: none;
+    border-color: var(--orange);
+  }
+
+  button.primary {
+    background: linear-gradient(135deg, var(--orange), var(--orange-light));
+    color: var(--white);
+    border: none;
+    padding: 16px 24px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 14px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 6px 16px rgba(255, 111, 0, 0.3);
+  }
+
+  button.primary:active { transform: scale(0.97); }
+  button.primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  button.secondary {
+    background: var(--white);
+    color: var(--green);
+    border: 2px solid var(--green);
+    padding: 14px 22px;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 14px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  /* ---------- Clarify chat ---------- */
+  .clarify-screen {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    animation: fadeIn 0.4s ease;
+  }
+
+  .bubble {
+    padding: 14px 16px;
+    border-radius: 16px;
+    max-width: 88%;
+    line-height: 1.5;
+    font-size: 0.98rem;
+  }
+
+  .bubble.agent {
+    background: #eef5ee;
+    color: var(--text);
+    align-self: flex-start;
+    border-bottom-right-radius: 4px;
+  }
+
+  .bubble.user {
+    background: var(--green);
+    color: var(--white);
+    align-self: flex-end;
+    border-bottom-left-radius: 4px;
+  }
+
+  .clarify-question {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .clarify-input {
+    padding: 12px 14px;
+    border: 2px solid #e2ebe2;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 1rem;
+    text-align: right;
+  }
+
+  /* ---------- Progress ---------- */
+  .progress-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    gap: 22px;
+    text-align: center;
+  }
+
+  .spinner {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 6px solid #e2ebe2;
+    border-top-color: var(--orange);
+    animation: spin 0.9s linear infinite;
+  }
+
+  .progress-text {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--green);
+    min-height: 28px;
+  }
+
+  /* ---------- Results ---------- */
+  .results-screen {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    animation: fadeIn 0.5s ease;
+  }
+
+  .card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 18px;
+    box-shadow: var(--shadow);
+    border: 1px solid #eef2ee;
+  }
+
+  .card h3 {
+    margin: 0 0 10px;
+    font-size: 1.05rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card.summary h3 { color: var(--green); }
+  .card.cheapest h3 { color: var(--orange); }
+  .card.tip h3 { color: var(--green-light); }
+
+  .price-range {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+  }
+
+  .price-range .avg {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--green);
+  }
+
+  .price-range .minmax {
+    color: var(--muted);
+    font-size: 0.9rem;
+    text-align: left;
+  }
+
+  .cheapest-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .cheapest-row .site-info .site-name {
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .cheapest-row .site-info .badge {
+    display: inline-block;
+    background: var(--orange);
+    color: var(--white);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-bottom: 4px;
+  }
+
+  .cheapest-row .price {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--green);
+    white-space: nowrap;
+  }
+
+  .go-btn {
+    display: inline-block;
+    margin-top: 10px;
+    background: var(--green);
+    color: var(--white);
+    text-decoration: none;
+    text-align: center;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.92rem;
+    width: 100%;
+  }
+
+  .card.tip p { margin: 0; line-height: 1.6; color: var(--text); }
+
+  /* ---------- Chat ---------- */
+  .chat-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 4px;
+  }
+
+  .chat-section h3 {
+    color: var(--green);
+    margin: 0;
+  }
+
+  .chat-log {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 260px;
+    overflow-y: auto;
+    padding: 4px 2px;
+  }
+
+  .chat-input-row {
+    display: flex;
+    gap: 8px;
+    position: sticky;
+    bottom: 76px;
+  }
+
+  .chat-input-row input {
+    flex: 1;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 2px solid #e2ebe2;
+    font-family: inherit;
+    font-size: 0.98rem;
+    text-align: right;
+  }
+
+  .chat-input-row button {
+    background: var(--orange);
+    color: var(--white);
+    border: none;
+    border-radius: 12px;
+    padding: 0 16px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .bottom-actions {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    padding: 14px 20px 18px;
+    background: linear-gradient(to top, var(--white) 70%, transparent);
+  }
+
+  .hidden { display: none !important; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pop { 0% { transform: scale(0.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="top-bar">
+    <div class="brand"><span class="icon">🏷️</span><span>עומר</span></div>
+  </header>
+
+  <main id="main">
+
+    <!-- Splash -->
+    <section id="screen-splash" class="splash">
+      <div class="tag-icon">🏷️</div>
+      <h1>עומר</h1>
+      <p>מוצא לך את המחיר הכי טוב</p>
+      <button class="primary start-btn" id="btn-start">בוא נתחיל</button>
+    </section>
+
+    <!-- Search -->
+    <section id="screen-search" class="search-screen hidden">
+      <div class="search-title">מה אתה מחפש?</div>
+      <input type="text" class="search-box" id="product-input" placeholder="לדוגמה: אוזניות אלחוטיות, מקרר, נעלי ריצה...">
+      <button class="primary" id="btn-search">חפש מחיר</button>
+    </section>
+
+    <!-- Clarify -->
+    <section id="screen-clarify" class="clarify-screen hidden"></section>
+
+    <!-- Progress -->
+    <section id="screen-progress" class="progress-screen hidden">
+      <div class="spinner"></div>
+      <div class="progress-text" id="progress-text">מחפש בזאפ...</div>
+    </section>
+
+    <!-- Results -->
+    <section id="screen-results" class="results-screen hidden">
+      <div id="results-content"></div>
+
+      <div class="chat-section">
+        <h3>שאלות המשך</h3>
+        <div class="chat-log" id="chat-log"></div>
+        <div class="chat-input-row">
+          <input type="text" id="chat-input" placeholder="שאל את עומר משהו...">
+          <button id="btn-chat-send">שלח</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="bottom-actions hidden" id="new-search-wrap">
+    <button class="secondary" style="width:100%" id="btn-new-search">חיפוש חדש</button>
+  </div>
+</div>
+
+<script>
+const API_URL = (typeof window.API_URL !== 'undefined') ? window.API_URL : '';
+
+const screens = {
+  splash: document.getElementById('screen-splash'),
+  search: document.getElementById('screen-search'),
+  clarify: document.getElementById('screen-clarify'),
+  progress: document.getElementById('screen-progress'),
+  results: document.getElementById('screen-results'),
+};
+const newSearchWrap = document.getElementById('new-search-wrap');
+
+let state = {
+  product: '',
+  answers: {},
+  result: null,
+  chatHistory: [],
+};
+
+function showScreen(name) {
+  Object.values(screens).forEach(s => s.classList.add('hidden'));
+  screens[name].classList.remove('hidden');
+  newSearchWrap.classList.toggle('hidden', name !== 'results');
+}
+
+document.getElementById('btn-start').addEventListener('click', () => {
+  showScreen('search');
+  document.getElementById('product-input').focus();
+});
+
+document.getElementById('btn-new-search').addEventListener('click', () => {
+  state = { product: '', answers: {}, result: null, chatHistory: [] };
+  document.getElementById('product-input').value = '';
+  document.getElementById('chat-log').innerHTML = '';
+  showScreen('search');
+});
+
+document.getElementById('product-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') startClarify();
+});
+document.getElementById('btn-search').addEventListener('click', startClarify);
+
+async function apiPost(path, body) {
+  const res = await fetch(API_URL + path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'שגיאה בשרת');
+  return data;
+}
+
+async function startClarify() {
+  const product = document.getElementById('product-input').value.trim();
+  if (!product) return;
+  state.product = product;
+
+  showScreen('progress');
+  setProgressText('עומר בודק את המוצר...');
+
+  try {
+    const data = await apiPost('/clarify', { product });
+    if (data.status === 'questions' && data.questions && data.questions.length) {
+      renderClarify(data.questions);
+      showScreen('clarify');
+    } else {
+      runSearch();
+    }
+  } catch (err) {
+    alert(err.message);
+    showScreen('search');
+  }
+}
+
+function renderClarify(questions) {
+  const el = screens.clarify;
+  el.innerHTML = '';
+
+  const intro = document.createElement('div');
+  intro.className = 'bubble agent';
+  intro.textContent = `כדי למצוא את המחיר הטוב ביותר עבור "${state.product}", יש לי כמה שאלות קצרות:`;
+  el.appendChild(intro);
+
+  let qIndex = 0;
+  const form = document.createElement('div');
+  form.className = 'clarify-question';
+
+  function renderQuestion() {
+    form.innerHTML = '';
+    if (qIndex >= questions.length) {
+      runSearch();
+      return;
+    }
+    const q = questions[qIndex];
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble agent';
+    bubble.textContent = q;
+    el.appendChild(bubble.cloneNode(true));
+
+    const input = document.createElement('input');
+    input.className = 'clarify-input';
+    input.placeholder = 'התשובה שלך...';
+    const btn = document.createElement('button');
+    btn.className = 'primary';
+    btn.textContent = 'הבא';
+    btn.addEventListener('click', () => answer(q, input.value));
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') answer(q, input.value); });
+
+    form.appendChild(input);
+    form.appendChild(btn);
+    el.appendChild(form);
+    input.focus();
+  }
+
+  function answer(question, value) {
+    if (value && value.trim()) {
+      state.answers[question] = value.trim();
+      const userBubble = document.createElement('div');
+      userBubble.className = 'bubble user';
+      userBubble.textContent = value.trim();
+      el.insertBefore(userBubble, form);
+    }
+    qIndex += 1;
+    renderQuestion();
+  }
+
+  renderQuestion();
+}
+
+const progressMessages = [
+  'מחפש בזאפ...',
+  'מחפש ב-Google Shopping...',
+  'משווה מחירים...',
+  'בודק דפי מוצר...',
+  'מסכם תוצאות...',
+];
+
+let progressInterval = null;
+function setProgressText(text) {
+  document.getElementById('progress-text').textContent = text;
+}
+function startProgressAnimation() {
+  let i = 0;
+  setProgressText(progressMessages[0]);
+  progressInterval = setInterval(() => {
+    i = (i + 1) % progressMessages.length;
+    setProgressText(progressMessages[i]);
+  }, 1800);
+}
+function stopProgressAnimation() {
+  if (progressInterval) clearInterval(progressInterval);
+  progressInterval = null;
+}
+
+async function runSearch() {
+  showScreen('progress');
+  startProgressAnimation();
+
+  try {
+    const data = await apiPost('/search', { product: state.product, answers: state.answers });
+    stopProgressAnimation();
+    state.result = data.result;
+    renderResults(data.result);
+    showScreen('results');
+  } catch (err) {
+    stopProgressAnimation();
+    alert(err.message);
+    showScreen('search');
+  }
+}
+
+function fmtPrice(n) {
+  if (n === null || n === undefined || isNaN(n)) return '-';
+  return '₪' + Number(n).toLocaleString('he-IL');
+}
+
+function renderResults(result) {
+  const c = document.getElementById('results-content');
+  c.innerHTML = '';
+
+  const summary = result.market_summary || {};
+  const cheapest = result.cheapest || [];
+  const tip = result.tip || '';
+
+  const summaryCard = document.createElement('div');
+  summaryCard.className = 'card summary';
+  summaryCard.innerHTML = `
+    <h3>📊 סיכום שוק</h3>
+    <div class="price-range">
+      <div class="avg">${fmtPrice(summary.avg_price)}</div>
+      <div class="minmax">טווח: ${fmtPrice(summary.min_price)} - ${fmtPrice(summary.max_price)}</div>
+    </div>
+  `;
+  c.appendChild(summaryCard);
+
+  cheapest.slice(0, 2).forEach((item, idx) => {
+    const card = document.createElement('div');
+    card.className = 'card cheapest';
+    card.innerHTML = `
+      <h3>${idx === 0 ? '🥇 הכי זול #1' : '🥈 הכי זול #2'}</h3>
+      <div class="cheapest-row">
+        <div class="site-info">
+          <div class="site-name">${item.site || 'אתר לא ידוע'}</div>
+        </div>
+        <div class="price">${fmtPrice(item.price)}</div>
+      </div>
+      ${item.url ? `<a class="go-btn" href="${item.url}" target="_blank" rel="noopener">עבור לאתר</a>` : ''}
+    `;
+    c.appendChild(card);
+  });
+
+  if (tip) {
+    const tipCard = document.createElement('div');
+    tipCard.className = 'card tip';
+    tipCard.innerHTML = `<h3>💡 טיפ של עומר</h3><p>${tip}</p>`;
+    c.appendChild(tipCard);
+  }
+}
+
+document.getElementById('btn-chat-send').addEventListener('click', sendChat);
+document.getElementById('chat-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') sendChat();
+});
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const message = input.value.trim();
+  if (!message) return;
+  input.value = '';
+
+  const log = document.getElementById('chat-log');
+  appendChatBubble('user', message);
+  state.chatHistory.push({ role: 'user', text: message });
+
+  const thinking = document.createElement('div');
+  thinking.className = 'bubble agent';
+  thinking.textContent = 'עומר חושב...';
+  thinking.style.animation = 'pulse 1.2s infinite';
+  log.appendChild(thinking);
+  log.scrollTop = log.scrollHeight;
+
+  try {
+    const data = await apiPost('/chat', {
+      product: state.product,
+      result: state.result,
+      history: state.chatHistory,
+      message,
+    });
+    thinking.remove();
+    appendChatBubble('agent', data.reply);
+    state.chatHistory.push({ role: 'assistant', text: data.reply });
+  } catch (err) {
+    thinking.remove();
+    appendChatBubble('agent', 'אופס, הייתה שגיאה: ' + err.message);
+  }
+}
+
+function appendChatBubble(role, text) {
+  const log = document.getElementById('chat-log');
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble ' + (role === 'user' ? 'user' : 'agent');
+  bubble.textContent = text;
+  log.appendChild(bubble);
+  log.scrollTop = log.scrollHeight;
+}
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
