@@ -18,9 +18,15 @@ SYSTEM_PROMPT = (
 )
 
 SEARCH_TOOLS = [
-    {"type": "web_search_20260209", "name": "web_search"},
-    {"type": "web_fetch_20260209", "name": "web_fetch"},
+    {"type": "web_search_20260209", "name": "web_search", "max_uses": 4},
+    {"type": "web_fetch_20260209", "name": "web_fetch", "max_uses": 4, "max_content_tokens": 4000},
 ]
+
+
+def api_error_response(e):
+    if isinstance(e, anthropic.RateLimitError):
+        return jsonify({"error": "יותר מדי בקשות כרגע, נסה שוב בעוד דקה"}), 429
+    return jsonify({"error": str(e)}), 502
 
 
 def get_client():
@@ -111,7 +117,7 @@ def clarify():
             messages=[{"role": "user", "content": prompt}],
         )
     except anthropic.APIError as e:
-        return jsonify({"error": str(e)}), 502
+        return api_error_response(e)
 
     text = extract_text(response.content)
     parsed = extract_json(text)
@@ -166,7 +172,7 @@ def search():
     try:
         response = run_with_tools(client, messages)
     except anthropic.APIError as e:
-        return jsonify({"error": str(e)}), 502
+        return api_error_response(e)
 
     if response.stop_reason == "refusal":
         return jsonify({"error": "עומר לא הצליח לבצע את החיפוש הזה"}), 422
@@ -210,7 +216,7 @@ def chat():
     try:
         response = run_with_tools(client, messages)
     except anthropic.APIError as e:
-        return jsonify({"error": str(e)}), 502
+        return api_error_response(e)
 
     if response.stop_reason == "refusal":
         return jsonify({"error": "עומר לא הצליח לענות על זה"}), 422
